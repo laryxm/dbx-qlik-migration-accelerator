@@ -1,0 +1,99 @@
+///$tab Main
+// Gerador do QVD de modelo · Custo assistencial (contas médicas + reembolsos)
+// Cooperativa de Saúde Vale do Ipê (empresa fictícia)
+SET ThousandSep='.';
+SET DecimalSep=',';
+SET DateFormat='DD/MM/YYYY';
+
+LET vPathExt   = 'lib://QVD_Extract/';
+LET vPathModel = 'lib://QVD_Model/';
+SET vAnoInicio = 2025;
+
+///$tab Mapas
+MapGuia:
+MAPPING LOAD * INLINE [
+IE_TIPO_GUIA, DS_GUIA
+C, Consulta
+S, SP/SADT
+I, Internação
+];
+
+MapGrupoProc:
+MAPPING LOAD * INLINE [
+CD_GRUPO, DS_GRUPO
+10, Consultas
+20, Exames e Diagnose
+30, Terapias
+40, Internação
+50, OPME
+];
+
+MapTipoPrestador:
+MAPPING LOAD * INLINE [
+IE_TIPO_PRESTADOR, DS_TIPO
+H, Hospital
+C, Clínica
+L, Laboratório
+M, Médico Cooperado
+];
+
+///$tab Fato
+Custo:
+LOAD
+    NR_ITEM_CONTA                                     as ID_ITEM,
+    NR_CONTA,
+    CD_BENEFICIARIO,
+    CD_PRESTADOR,
+    CD_PROCEDIMENTO,
+    Date(Floor(DT_ATENDIMENTO))                       as DT_ATENDIMENTO,
+    Date(MonthStart(DT_ATENDIMENTO))                  as [Competência],
+    ApplyMap('MapGuia', IE_TIPO_GUIA, 'Outros')       as [Tipo Guia],
+    'Conta Médica'                                    as ORIGEM,
+    VL_APRESENTADO,
+    VL_GLOSA,
+    VL_LIBERADO
+FROM [$(vPathExt)EXT_ContaMedicaItem.qvd] (qvd)
+WHERE IE_STATUS <> 'C'
+  AND Year(DT_ATENDIMENTO) >= $(vAnoInicio);
+
+Concatenate (Custo)
+LOAD
+    'R' & NR_REEMBOLSO                                as ID_ITEM,
+    CD_BENEFICIARIO,
+    CD_PROCEDIMENTO,
+    Date(Floor(DT_SOLICITACAO))                       as DT_ATENDIMENTO,
+    Date(MonthStart(DT_SOLICITACAO))                  as [Competência],
+    'Reembolso'                                       as [Tipo Guia],
+    'Reembolso'                                       as ORIGEM,
+    VL_SOLICITADO                                     as VL_APRESENTADO,
+    VL_SOLICITADO - VL_REEMBOLSADO                    as VL_GLOSA,
+    VL_REEMBOLSADO                                    as VL_LIBERADO
+FROM [$(vPathExt)EXT_Reembolso.qvd] (qvd)
+WHERE IE_STATUS = 'P'
+  AND Year(DT_SOLICITACAO) >= $(vAnoInicio);
+
+Procedimento:
+LOAD
+    CD_PROCEDIMENTO,
+    DS_PROCEDIMENTO,
+    ApplyMap('MapGrupoProc', CD_GRUPO, 'Outros')      as [Grupo Procedimento]
+FROM [$(vPathExt)EXT_Procedimento.qvd] (qvd);
+
+Left Join (Custo)
+LOAD CD_PROCEDIMENTO, [Grupo Procedimento]
+RESIDENT Procedimento;
+
+Left Join (Custo)
+LOAD CD_BENEFICIARIO, CD_PLANO, CD_CONTRATO, CD_REGIONAL
+FROM [$(vPathExt)EXT_Beneficiario.qvd] (qvd);
+
+Left Join (Custo)
+LOAD
+    CD_PRESTADOR,
+    ApplyMap('MapTipoPrestador', IE_TIPO_PRESTADOR, 'Não informado') as [Tipo Prestador],
+    If(IE_COOPERADO = 'S', 1, 0)                      as FL_COOPERADO
+FROM [$(vPathExt)EXT_Prestador.qvd] (qvd);
+
+STORE Custo        INTO [$(vPathModel)FatoCustoAssistencial.qvd] (qvd);
+STORE Procedimento INTO [$(vPathModel)DimProcedimento.qvd] (qvd);
+DROP TABLES Custo, Procedimento;

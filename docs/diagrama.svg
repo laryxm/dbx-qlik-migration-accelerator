@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 720" width="1400" height="720" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5C7A85"/>
+    </marker>
+    <marker id="seta-laranja" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#FF3621"/>
+    </marker>
+    <filter id="sombra" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#1B3139" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="720" fill="#FFFFFF"/>
+
+  <!-- título -->
+  <text x="40" y="46" font-size="25" font-weight="700" fill="#1B3139">Acelerador de migração Qlik → Databricks</text>
+  <text x="40" y="72" font-size="14" fill="#5C7A85">Do QVD ao Lakehouse: a IA converte, você aprova, a paridade comprova. Tudo conduzido por um app.</text>
+
+  <!-- ===================== coluna A: Qlik ===================== -->
+  <rect x="30" y="100" width="260" height="470" rx="14" fill="#FFF8F1" stroke="#F3D9C3"/>
+  <text x="50" y="128" font-size="12" font-weight="700" letter-spacing="1.6" fill="#C2541B">HOJE, NO QLIK</text>
+
+  <g filter="url(#sombra)">
+    <rect x="50" y="146" width="220" height="74" rx="10" fill="#FFFFFF" stroke="#EADBCF"/>
+    <rect x="50" y="246" width="220" height="74" rx="10" fill="#FFFFFF" stroke="#EADBCF"/>
+    <rect x="50" y="346" width="220" height="74" rx="10" fill="#FFFFFF" stroke="#EADBCF"/>
+  </g>
+  <text x="66" y="174" font-size="14" font-weight="700" fill="#1B3139">Load scripts (.qvs)</text>
+  <text x="66" y="194" font-size="11.5" fill="#5C7A85">extração, transformação</text>
+  <text x="66" y="209" font-size="11.5" fill="#5C7A85">e modelo no mesmo script</text>
+  <text x="66" y="274" font-size="14" font-weight="700" fill="#1B3139">QVDs</text>
+  <text x="66" y="294" font-size="11.5" fill="#5C7A85">milhares de arquivos</text>
+  <text x="66" y="309" font-size="11.5" fill="#5C7A85">intermediários e de modelo</text>
+  <text x="66" y="374" font-size="14" font-weight="700" fill="#1B3139">Apps</text>
+  <text x="66" y="394" font-size="11.5" fill="#5C7A85">medidas mestras, Set Analysis</text>
+  <text x="66" y="409" font-size="11.5" fill="#5C7A85">e Section Access</text>
+
+  <!-- banco de origem (cilindro) -->
+  <g filter="url(#sombra)">
+    <path d="M70,462 v58 a90,14 0 0 0 180,0 v-58" fill="#FFFFFF" stroke="#EADBCF"/>
+    <ellipse cx="160" cy="462" rx="90" ry="14" fill="#FFFFFF" stroke="#EADBCF"/>
+  </g>
+  <text x="160" y="500" font-size="14" font-weight="700" fill="#1B3139" text-anchor="middle">Banco do ERP</text>
+  <text x="160" y="518" font-size="11.5" fill="#5C7A85" text-anchor="middle">Oracle, SQL Server…</text>
+
+  <!-- seta arquivos -> acelerador -->
+  <path d="M290,283 H326" stroke="#5C7A85" stroke-width="2" fill="none" marker-end="url(#seta)"/>
+
+  <!-- ===================== coluna B: acelerador ===================== -->
+  <rect x="330" y="100" width="690" height="58" rx="12" fill="#1B3139"/>
+  <text x="352" y="125" font-size="11" font-weight="700" letter-spacing="1.6" fill="#FF3621">APP · DATABRICKS APPS</text>
+  <text x="352" y="146" font-size="14.5" font-weight="700" fill="#FFFFFF">Você configura, executa, revisa e acompanha por aqui</text>
+  <g font-size="11" fill="#C7D0D4">
+    <rect x="770" y="117" width="74" height="24" rx="12" fill="#24414B"/><text x="807" y="133" text-anchor="middle">Entrada</text>
+    <rect x="850" y="117" width="74" height="24" rx="12" fill="#24414B"/><text x="887" y="133" text-anchor="middle">Revisão</text>
+    <rect x="930" y="117" width="74" height="24" rx="12" fill="#24414B"/><text x="967" y="133" text-anchor="middle">Paridade</text>
+  </g>
+  <path d="M675,158 V178" stroke="#5C7A85" stroke-width="2" fill="none" marker-end="url(#seta)" stroke-dasharray="4 3"/>
+  <text x="684" y="174" font-size="10.5" fill="#5C7A85">dispara e lê os resultados</text>
+
+  <rect x="330" y="182" width="690" height="266" rx="14" fill="#F5F7F8" stroke="#DEE2E6"/>
+  <text x="350" y="206" font-size="12" font-weight="700" letter-spacing="1.6" fill="#0B7285">JOB SERVERLESS · 8 PASSOS</text>
+
+  <!-- linha 1: 1 2 3 4 -->
+  <g filter="url(#sombra)">
+    <rect x="350" y="218" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="516" y="218" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="682" y="218" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="848" y="218" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="848" y="338" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#FF3621" stroke-width="1.8"/>
+    <rect x="682" y="338" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="516" y="338" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="350" y="338" width="150" height="92" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+  </g>
+  <g font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+    <circle cx="374" cy="242" r="13" fill="#1B3139"/><text x="374" y="246">1</text>
+    <circle cx="540" cy="242" r="13" fill="#1B3139"/><text x="540" y="246">2</text>
+    <circle cx="706" cy="242" r="13" fill="#1B3139"/><text x="706" y="246">3</text>
+    <circle cx="872" cy="242" r="13" fill="#1B3139"/><text x="872" y="246">4</text>
+    <circle cx="872" cy="362" r="13" fill="#FF3621"/><text x="872" y="366">5</text>
+    <circle cx="706" cy="362" r="13" fill="#1B3139"/><text x="706" y="366">6</text>
+    <circle cx="540" cy="362" r="13" fill="#1B3139"/><text x="540" y="366">7</text>
+    <circle cx="374" cy="362" r="13" fill="#1B3139"/><text x="374" y="366">8</text>
+  </g>
+  <g font-size="12.5" font-weight="700" fill="#1B3139">
+    <text x="393" y="247">Preparar</text>
+    <text x="559" y="247">Simular Qlik</text>
+    <text x="725" y="247">Triagem</text>
+    <text x="891" y="247">Linhagem</text>
+    <text x="891" y="367">Conversão IA</text>
+    <text x="725" y="367">Publicar</text>
+    <text x="559" y="367">Métricas</text>
+    <text x="393" y="367">Paridade</text>
+  </g>
+  <g font-size="11" fill="#5C7A85">
+    <text x="362" y="276">schemas, volume e</text><text x="362" y="291">tabelas de controle</text>
+    <text x="528" y="276">só na demonstração:</text><text x="528" y="291">ERP e QVDs fictícios</text>
+    <text x="694" y="276">o que migrar, arquivar</text><text x="694" y="291">ou descartar</text>
+    <text x="860" y="276">da métrica do app até</text><text x="860" y="291">a coluna de origem</text>
+    <text x="860" y="396">SQL nativo + nota</text><text x="860" y="411">de confiança 0 a 100</text>
+    <text x="694" y="396">pipeline + bundle</text><text x="694" y="411">dev · hml · prd</text>
+    <text x="528" y="396">metric views e Section</text><text x="528" y="411">Access → row filter</text>
+    <text x="362" y="396">N1 a N4 contra os</text><text x="362" y="411">números do Qlik</text>
+  </g>
+  <!-- setas do fluxo em zigue-zague -->
+  <g stroke="#5C7A85" stroke-width="2" fill="none" marker-end="url(#seta)">
+    <path d="M500,264 H512"/><path d="M666,264 H678"/><path d="M832,264 H844"/>
+    <path d="M923,310 V334"/>
+    <path d="M848,384 H836"/><path d="M682,384 H670"/><path d="M516,384 H504"/>
+  </g>
+  <!-- revisão humana -->
+  <rect x="852" y="436" width="142" height="22" rx="11" fill="#FF3621"/>
+  <text x="923" y="451" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">nota &lt; 85 → você aprova</text>
+
+  <!-- princípios -->
+  <g filter="url(#sombra)">
+    <rect x="330" y="472" width="222" height="98" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="564" y="472" width="222" height="98" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+    <rect x="798" y="472" width="222" height="98" rx="10" fill="#FFFFFF" stroke="#DEE2E6"/>
+  </g>
+  <rect x="330" y="472" width="5" height="98" rx="2" fill="#5F3DC4"/>
+  <rect x="564" y="472" width="5" height="98" rx="2" fill="#0B7285"/>
+  <rect x="798" y="472" width="5" height="98" rx="2" fill="#2B8A3E"/>
+  <g font-size="12.5" font-weight="700" fill="#1B3139">
+    <text x="348" y="497">A IA só vê metadados</text>
+    <text x="582" y="497">Nada publica sem validar</text>
+    <text x="816" y="497">Paridade é entregável</text>
+  </g>
+  <g font-size="11" fill="#5C7A85">
+    <text x="348" y="518">recebe scripts, nomes de</text><text x="348" y="533">tabelas e colunas; nenhuma</text><text x="348" y="548">linha de dado de negócio</text>
+    <text x="582" y="518">lint anti-viés, compilação</text><text x="582" y="533">em sandbox, contrato de</text><text x="582" y="548">colunas e contagem do QVD</text>
+    <text x="816" y="518">cada objeto comparado com</text><text x="816" y="533">o Qlik antes de desligar</text><text x="816" y="548">o QVD correspondente</text>
+  </g>
+
+  <!-- seta acelerador -> lakehouse -->
+  <path d="M1020,320 H1056" stroke="#5C7A85" stroke-width="2" fill="none" marker-end="url(#seta)"/>
+  <text x="1038" y="309" font-size="10.5" fill="#5C7A85" text-anchor="middle">gera</text>
+
+  <!-- ===================== coluna C: Lakehouse ===================== -->
+  <rect x="1060" y="100" width="310" height="470" rx="14" fill="#F4FAFB" stroke="#CFE6EA"/>
+  <text x="1080" y="128" font-size="12" font-weight="700" letter-spacing="1.6" fill="#0B7285">LAKEHOUSE · UNITY CATALOG</text>
+  <g filter="url(#sombra)">
+    <rect x="1080" y="142" width="270" height="56" rx="10" fill="#FFFFFF" stroke="#0B7285"/>
+    <rect x="1080" y="208" width="270" height="56" rx="10" fill="#FFFFFF" stroke="#C08A52"/>
+    <rect x="1080" y="274" width="270" height="56" rx="10" fill="#FFFFFF" stroke="#9AA5AE"/>
+    <rect x="1080" y="340" width="270" height="56" rx="10" fill="#FFFFFF" stroke="#C9A227"/>
+    <rect x="1080" y="406" width="270" height="56" rx="10" fill="#FFFFFF" stroke="#5F3DC4"/>
+  </g>
+  <rect x="1080" y="142" width="8" height="56" rx="3" fill="#0B7285"/>
+  <rect x="1080" y="208" width="8" height="56" rx="3" fill="#C08A52"/>
+  <rect x="1080" y="274" width="8" height="56" rx="3" fill="#9AA5AE"/>
+  <rect x="1080" y="340" width="8" height="56" rx="3" fill="#C9A227"/>
+  <rect x="1080" y="406" width="8" height="56" rx="3" fill="#5F3DC4"/>
+  <g font-size="13" font-weight="700" fill="#1B3139">
+    <text x="1100" y="166">Entrada · volume</text>
+    <text x="1100" y="232">Bronze · origens</text>
+    <text x="1100" y="298">Silver · intermediário</text>
+    <text x="1100" y="364">Gold · fatos e dimensões</text>
+    <text x="1100" y="430">Metric views</text>
+  </g>
+  <g font-size="11" fill="#5C7A85">
+    <text x="1100" y="185">os arquivos exportados do Qlik</text>
+    <text x="1100" y="251">tabelas do banco, sem regra</text>
+    <text x="1100" y="317">no lugar dos QVDs de transformação</text>
+    <text x="1100" y="383">no lugar dos QVDs Fato e Dim</text>
+    <text x="1100" y="449">no lugar das medidas mestras</text>
+  </g>
+  <text x="1215" y="492" font-size="11" fill="#5C7A85" text-anchor="middle">consumido por</text>
+  <g font-size="11.5" font-weight="700" fill="#1B3139" text-anchor="middle">
+    <rect x="1080" y="502" width="62" height="28" rx="14" fill="#FFFFFF" stroke="#CFE6EA"/><text x="1111" y="520">AI/BI</text>
+    <rect x="1149" y="502" width="62" height="28" rx="14" fill="#FFFFFF" stroke="#CFE6EA"/><text x="1180" y="520">Genie</text>
+    <rect x="1218" y="502" width="68" height="28" rx="14" fill="#FFFFFF" stroke="#CFE6EA"/><text x="1252" y="520">Power BI</text>
+    <rect x="1293" y="502" width="57" height="28" rx="14" fill="#FFFFFF" stroke="#CFE6EA"/><text x="1321" y="520">SQL</text>
+  </g>
+
+  <!-- banco -> bronze (Lakeflow Connect), passando por baixo -->
+  <path d="M250,505 H300 V590 H1040 V236 H1076" stroke="#FF3621" stroke-width="2" fill="none" marker-end="url(#seta-laranja)"/>
+  <rect x="580" y="579" width="216" height="22" rx="11" fill="#FFFFFF" stroke="#FF3621"/>
+  <text x="688" y="594" font-size="11" font-weight="700" fill="#FF3621" text-anchor="middle">Lakeflow Connect · D-1 ou CDC</text>
+
+  <!-- ===================== faixa de governança ===================== -->
+  <rect x="30" y="620" width="1340" height="76" rx="14" fill="#1B3139"/>
+  <text x="54" y="648" font-size="12" font-weight="700" letter-spacing="1.6" fill="#FF3621">GOVERNANÇA E OBSERVABILIDADE</text>
+  <g font-size="12.5" fill="#E6EDF0">
+    <text x="54" y="676">● Diário de tudo, com usuário</text>
+    <text x="284" y="676">● Estado de cada tabela e objeto</text>
+    <text x="530" y="676">● Aprovações com autor</text>
+    <text x="722" y="676">● Traces de IA e tokens (MLflow)</text>
+    <text x="970" y="676">● Tags por onda → custo</text>
+    <text x="1160" y="676">● Section Access → row filter</text>
+  </g>
+</svg>

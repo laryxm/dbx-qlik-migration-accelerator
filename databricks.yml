@@ -1,0 +1,35 @@
+# =====================================================================
+# Acelerador de migração Qlik para Databricks (Databricks Asset Bundle)
+#
+# Instala no seu workspace, de uma vez:
+#   - o job com os 8 passos do acelerador (compute serverless)
+#   - o app "qlik-acelerador" (Databricks Apps), que é a interface de uso
+#
+# Instalação guiada:   ./instalar/instalar.sh
+# Instalação manual:   databricks bundle deploy --var catalogo=<catalogo> --var warehouse_id=<id>
+# Veja o README para o passo a passo.
+# =====================================================================
+bundle:
+  name: dbx-qlik-migration-accelerator
+
+include:
+  - resources/*.yml
+
+variables:
+  catalogo:
+    description: Catálogo do Unity Catalog onde o acelerador cria seus schemas. Precisa existir, e quem instala precisa de CREATE SCHEMA nele.
+  warehouse_id:
+    description: ID do SQL warehouse que o app usa para ler as tabelas (SQL Warehouses → seu warehouse → Connection details).
+  prefixo_schema:
+    description: Prefixo dos schemas criados (<prefixo>_ctrl, _bronze, _silver, _gold, _sandbox).
+    default: qlik_acel
+  modelo:
+    description: Endpoint de foundation model usado na conversão com IA (Serving → endpoints).
+    default: databricks-claude-sonnet-5-5
+  app_nome:
+    description: Nome do app no Databricks Apps (minúsculas, números e hífen).
+    default: qlik-acelerador
+
+targets:
+  padrao:
+    default: true

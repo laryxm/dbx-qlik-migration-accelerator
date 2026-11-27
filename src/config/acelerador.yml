@@ -1,0 +1,79 @@
+# =====================================================================
+# Configuração do Acelerador de Migração Qlik para Databricks
+# ---------------------------------------------------------------------
+# Este arquivo traz os valores padrão. O app do acelerador grava as
+# alterações feitas pela tela "Configuração" em
+#   /Volumes/<catalogo>/<prefixo>_ctrl/arquivos/config/acelerador.json
+# e esse arquivo, quando existe, tem prioridade sobre este.
+# Só catálogo e prefixo de schema precisam estar aqui ou no job,
+# porque é por eles que o acelerador encontra o resto.
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# O QUE O CLIENTE PRECISA PREENCHER: só o bloco "ambiente" (modo e, no
+# modo cliente, schema_bronze). Todo o resto já vem com um padrão que funciona.
+# ---------------------------------------------------------------------
+ambiente:
+  catalogo: main                   # definido na instalação (parâmetro do job); não muda pela tela
+  prefixo_schema: qlik_v2          # schemas: <prefixo>_ctrl, _bronze, _silver, _gold, _sandbox
+  modo: demo                       # demo = dados fictícios para conhecer o fluxo · cliente = arquivos reais do Qlik
+  schema_bronze: null              # modo cliente: catalogo.schema onde o Lakeflow Connect grava as tabelas de origem
+  onda: onda_1                     # lote de migração em andamento (ex.: onda_1_financeiro); vai para tags, eventos e custo
+  dono: null                       # vazio = quem executa o job; recebe alertas de falha
+  tags: {}                         # tags extras para schemas, volume e tabelas (ex.: centro_custo)
+
+entrada:
+  volume: null                     # vazio = /Volumes/<catalogo>/<prefixo>_ctrl/arquivos (criado pelo acelerador)
+  pasta_inventario: inventario
+  pasta_scripts: scripts
+  pasta_apps: apps
+  pasta_qvd: qvd
+
+ia:
+  endpoint: databricks-claude-sonnet-5-5
+  max_tokens: 16000
+  tentativas: 2                    # 1 geração + rodadas de correção automática
+  usar_cache: true                 # reaproveita resposta quando script e contexto não mudaram
+  experimento_mlflow: null         # null = /Users/<dono>/qlik_acelerador_<prefixo>
+
+triagem:
+  dias_ativo: 30
+  dias_recente: 90
+  dias_parado: 365                 # acima disso: arquivar como histórico
+  espacos_descartar: ["Pessoal", "TESTES", "Espaço DEV"]
+  termo_teste: "TESTE"
+  prefixos_gold: ["FATO", "DIM", "DET", "CUSTO", "INDIC", "SINISTR", "EVOL"]
+  prefixos_bronze: ["BI_", "LOG_", "EXT_", "STG_"]
+
+conversao:
+  prefixos_qvd_gold: ["fato", "dim"]          # QVD de transformação com esse prefixo vai para gold; o resto, silver
+  prefixo_tabela_bronze: "bronze_erp_"
+  prefixos_tabela_origem_remover: ["TB_"]
+  prefixos_chave_primaria: ["NR_", "CD_", "ID_"]
+  colunas_cursor: ["DT_ATUALIZACAO", "DT_ALTERACAO", "DT_ULT_ALTERACAO"]
+
+revisao:
+  nota_minima_auto: 85             # conversão validada com nota >= este valor é aprovada sem revisão humana
+
+paridade:
+  tolerancia_relativa: 0.0001      # 0,01%
+  tolerancia_absoluta: 1.0         # R$ 1
+  colunas_periodo: ["competencia", "dt_competencia", "dt_atendimento"]
+  dimensoes_n2: ["tipo_guia", "origem", "grupo_procedimento"]
+  prefixos_numericos: ["vl_", "qt_", "pc_"]
+
+seguranca:
+  grupo_admin: admins
+  prefixo_grupo_idp: "grp_"
+  tabela_alvo: fato_custo_assistencial   # tabela gold que recebe o row filter
+  coluna_filtro: cd_regional
+  coluna_valor_teste: vl_liberado        # soma usada no teste por perfil
+
+publicacao:
+  nome_bundle: qlik_custo_assistencial
+  agendamento_cron: "0 0 6 * * ?"
+  fuso: America/Sao_Paulo
+  ambientes:
+    dev: {bronze: dev_bronze.erp, silver: dev_silver.custo_assistencial, gold: dev_gold.custo_assistencial}
+    hml: {bronze: hml_bronze.erp, silver: hml_silver.custo_assistencial, gold: hml_gold.custo_assistencial}
+    prd: {bronze: prd_bronze.erp, silver: prd_silver.custo_assistencial, gold: prd_gold.custo_assistencial}

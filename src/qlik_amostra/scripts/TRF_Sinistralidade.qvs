@@ -1,0 +1,57 @@
+///$tab Main
+// Gerador do QVD de modelo · Sinistralidade por contrato e competência
+// Cooperativa de Saúde Vale do Ipê (empresa fictícia)
+SET DecimalSep=',';
+SET DateFormat='DD/MM/YYYY';
+
+LET vPathExt   = 'lib://QVD_Extract/';
+LET vPathModel = 'lib://QVD_Model/';
+SET vAnoInicio = 2025;
+
+///$tab Bases
+Custo:
+LOAD CD_CONTRATO, [Competência], CD_BENEFICIARIO, VL_LIBERADO
+FROM [$(vPathModel)FatoCustoAssistencial.qvd] (qvd);
+
+BeneficiariosAtivos:
+LOAD CD_BENEFICIARIO
+FROM [$(vPathExt)EXT_Beneficiario.qvd] (qvd)
+WHERE IsNull(DT_CANCELAMENTO) OR DT_CANCELAMENTO >= MakeDate($(vAnoInicio), 1, 1);
+
+// só mensalidades de beneficiários já carregados acima (Custo ou ativos)
+Mensalidade:
+LOAD
+    CD_CONTRATO,
+    Date(MonthStart(DT_COMPETENCIA))                  as [Competência],
+    VL_MENSALIDADE
+FROM [$(vPathExt)EXT_Mensalidade.qvd] (qvd)
+WHERE Exists(CD_BENEFICIARIO);
+
+///$tab Sinistralidade
+Sinistralidade:
+LOAD
+    CD_CONTRATO,
+    [Competência],
+    Sum(VL_LIBERADO)                                  as VL_CUSTO,
+    Count(DISTINCT CD_BENEFICIARIO)                   as QT_BENEF_ATENDIDOS
+RESIDENT Custo
+GROUP BY CD_CONTRATO, [Competência];
+
+Join (Sinistralidade)
+LOAD
+    CD_CONTRATO,
+    [Competência],
+    Sum(VL_MENSALIDADE)                               as VL_RECEITA
+RESIDENT Mensalidade
+GROUP BY CD_CONTRATO, [Competência];
+
+FatoSinistralidade:
+LOAD
+    *,
+    If(VL_RECEITA > 0, RangeSum(VL_CUSTO) / VL_RECEITA) as PC_SINISTRALIDADE
+RESIDENT Sinistralidade;
+
+DROP TABLES Sinistralidade, Custo, Mensalidade, BeneficiariosAtivos;
+
+STORE FatoSinistralidade INTO [$(vPathModel)FatoSinistralidade.qvd] (qvd);
+DROP TABLE FatoSinistralidade;

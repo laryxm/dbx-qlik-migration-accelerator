@@ -1,0 +1,20 @@
+# Databricks
+.databricks/
+.bundle/
+*.databrickscfg
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+# segredos e arquivos locais
+.env
+.env.*
+*.pem
+*.key
+# sistema
+.DS_Store
+# saídas geradas pelo acelerador (ficam no workspace, não no Git)
+src/bundle_gerado/
+src/docs_gerados/
+src/pipeline_gerado/

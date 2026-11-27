@@ -1,0 +1,19 @@
+resources:
+  apps:
+    acelerador:
+      name: ${var.app_nome}
+      description: "Acelerador de migração Qlik para Databricks: entrada de dados, execução, revisão do código gerado por IA, publicação e paridade."
+      source_code_path: ../app
+      resources:
+        - name: sql-warehouse
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE
+        - name: job
+          job:
+            id: ${resources.jobs.acelerador_fluxo.id}
+            permission: CAN_MANAGE_RUN
+        - name: serving-endpoint
+          serving_endpoint:
+            name: ${var.modelo}
+            permission: CAN_QUERY

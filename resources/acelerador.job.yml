@@ -1,0 +1,55 @@
+resources:
+  jobs:
+    acelerador_fluxo:
+      name: ${var.app_nome}-fluxo
+      description: "Acelerador de migração Qlik para Databricks: inventário, linhagem, conversão com IA, publicação, semântica e paridade. Use pelo app ${var.app_nome}."
+      max_concurrent_runs: 1
+      tags:
+        gerado_por: dbx-qlik-migration-accelerator
+      parameters:
+        - name: catalogo
+          default: ${var.catalogo}
+        - name: prefixo_schema
+          default: ${var.prefixo_schema}
+        - name: onda
+          default: onda_1
+        - name: modo
+          default: demo
+        - name: modelo
+          default: ${var.modelo}
+        - name: app_nome
+          default: ${var.app_nome}
+        - name: execucao_id
+          default: "{{job.run_id}}"
+      tasks:
+        - task_key: 01_preparar_ambiente
+          notebook_task:
+            notebook_path: ../src/01_preparar_ambiente.py
+        - task_key: 02_simular_ambiente_qlik
+          depends_on: [{task_key: 01_preparar_ambiente}]
+          notebook_task:
+            notebook_path: ../src/02_simular_ambiente_qlik.py
+        - task_key: 03_inventario_triagem
+          depends_on: [{task_key: 02_simular_ambiente_qlik}]
+          notebook_task:
+            notebook_path: ../src/03_inventario_triagem.py
+        - task_key: 04_linhagem
+          depends_on: [{task_key: 03_inventario_triagem}]
+          notebook_task:
+            notebook_path: ../src/04_linhagem.py
+        - task_key: 05_conversao_ia
+          depends_on: [{task_key: 04_linhagem}]
+          notebook_task:
+            notebook_path: ../src/05_conversao_ia.py
+        - task_key: 06_publicar
+          depends_on: [{task_key: 05_conversao_ia}]
+          notebook_task:
+            notebook_path: ../src/06_publicar.py
+        - task_key: 07_semantica_seguranca
+          depends_on: [{task_key: 06_publicar}]
+          notebook_task:
+            notebook_path: ../src/07_semantica_seguranca.py
+        - task_key: 08_paridade
+          depends_on: [{task_key: 07_semantica_seguranca}]
+          notebook_task:
+            notebook_path: ../src/08_paridade.py

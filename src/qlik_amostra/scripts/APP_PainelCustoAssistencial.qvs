@@ -1,0 +1,42 @@
+///$tab Section
+// App de consumo · Painel de Custo Assistencial
+// Cooperativa de Saúde Vale do Ipê (empresa fictícia)
+Section Access;
+LOAD * INLINE [
+ACCESS, USERID, CD_REGIONAL
+ADMIN, INTERNAL\SA_SCHEDULER, *
+USER, VALEIPE\ANA.GESTORA, CAP
+USER, VALEIPE\BRUNO.ANALISTA, NOR
+USER, VALEIPE\BRUNO.ANALISTA, SUL
+USER, VALEIPE\CARLA.DIRETORA, *
+];
+Section Application;
+
+///$tab Modelo
+SET DateFormat='DD/MM/YYYY';
+LET vPathModel = 'lib://QVD_Model/';
+
+Fato:
+LOAD * FROM [$(vPathModel)FatoCustoAssistencial.qvd] (qvd);
+
+Procedimento:
+LOAD CD_PROCEDIMENTO, DS_PROCEDIMENTO
+FROM [$(vPathModel)DimProcedimento.qvd] (qvd);
+
+Sinistralidade:
+LOAD * FROM [$(vPathModel)FatoSinistralidade.qvd] (qvd);
+
+///$tab Calendario
+TmpDatas:
+LOAD Min(DT_ATENDIMENTO) as MinData, Max(DT_ATENDIMENTO) as MaxData RESIDENT Fato;
+LET vMin = Peek('MinData', 0, 'TmpDatas');
+LET vMax = Peek('MaxData', 0, 'TmpDatas');
+DROP TABLE TmpDatas;
+
+Calendario:
+LOAD
+    Date($(vMin) + IterNo() - 1)                      as DT_ATENDIMENTO,
+    Year($(vMin) + IterNo() - 1)                      as Ano,
+    Month($(vMin) + IterNo() - 1)                     as Mes
+AUTOGENERATE 1
+WHILE $(vMin) + IterNo() - 1 <= $(vMax);

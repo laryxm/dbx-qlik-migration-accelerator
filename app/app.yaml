@@ -1,0 +1,10 @@
+command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+env:
+  # Recursos do app (declarados no bundle ou na criação do app):
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  - name: JOB_ID
+    valueFrom: job
+  - name: SERVING_ENDPOINT
+    valueFrom: serving-endpoint
+  # Catálogo e prefixo dos schemas são lidos dos parâmetros do job do acelerador.

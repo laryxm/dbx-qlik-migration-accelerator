@@ -1,0 +1,77 @@
+///$tab Main
+// Gerador de QVDs da camada Extract · ERP de saúde (Oracle on-prem)
+// Cooperativa de Saúde Vale do Ipê (empresa fictícia)
+SET ThousandSep='.';
+SET DecimalSep=',';
+SET DateFormat='DD/MM/YYYY';
+SET TimestampFormat='DD/MM/YYYY hh:mm:ss[.fff]';
+
+LIB CONNECT TO 'ORACLE_ERP_SAUDE';
+
+LET vPathQVD  = 'lib://QVD_Extract/';
+LET vDataCorte = '01/01/2025';
+
+///$tab Cadastros
+Beneficiario:
+SQL SELECT CD_BENEFICIARIO, NM_BENEFICIARIO, DT_NASCIMENTO, IE_SEXO, CD_PLANO,
+           CD_CONTRATO, CD_REGIONAL, DT_ADESAO, DT_CANCELAMENTO
+FROM ERP.TB_BENEFICIARIO;
+STORE Beneficiario INTO [$(vPathQVD)EXT_Beneficiario.qvd] (qvd);
+DROP TABLE Beneficiario;
+
+Prestador:
+SQL SELECT CD_PRESTADOR, NM_PRESTADOR, IE_TIPO_PRESTADOR, CD_MUNICIPIO, IE_COOPERADO
+FROM ERP.TB_PRESTADOR;
+STORE Prestador INTO [$(vPathQVD)EXT_Prestador.qvd] (qvd);
+DROP TABLE Prestador;
+
+// descrição vem de função do ERP; grupo vem da tabela de grupos
+Procedimento:
+SQL SELECT P.CD_PROCEDIMENTO,
+           FN_DESCRICAO_PROCEDIMENTO(P.CD_PROCEDIMENTO) AS DS_PROCEDIMENTO,
+           G.CD_GRUPO
+FROM ERP.TB_PROCEDIMENTO P
+JOIN ERP.TB_GRUPO_PROCEDIMENTO G ON G.CD_GRUPO = P.CD_GRUPO;
+STORE Procedimento INTO [$(vPathQVD)EXT_Procedimento.qvd] (qvd);
+DROP TABLE Procedimento;
+
+///$tab ContaMedica (incremental)
+Controle:
+LOAD Max(DT_ATUALIZACAO) as MAX_DT
+FROM [$(vPathQVD)EXT_ContaMedicaItem.qvd] (qvd);
+LET vUltimaAtualizacao = Timestamp(Peek('MAX_DT', 0, 'Controle'), 'DD/MM/YYYY hh:mm:ss');
+DROP TABLE Controle;
+
+ContaMedicaItem:
+SQL SELECT NR_ITEM_CONTA, NR_CONTA, CD_BENEFICIARIO, CD_PRESTADOR, CD_PROCEDIMENTO,
+           DT_ATENDIMENTO, IE_TIPO_GUIA, IE_STATUS, VL_APRESENTADO, VL_GLOSA,
+           VL_LIBERADO, DT_ATUALIZACAO
+FROM ERP.TB_CONTA_MEDICA_ITEM
+WHERE DT_ATUALIZACAO > TO_DATE('$(vUltimaAtualizacao)', 'DD/MM/YYYY HH24:MI:SS');
+
+Concatenate (ContaMedicaItem)
+LOAD * FROM [$(vPathQVD)EXT_ContaMedicaItem.qvd] (qvd)
+WHERE NOT Exists(NR_ITEM_CONTA);
+
+// remove itens excluídos na origem
+Inner Join (ContaMedicaItem)
+SQL SELECT NR_ITEM_CONTA FROM ERP.TB_CONTA_MEDICA_ITEM;
+
+STORE ContaMedicaItem INTO [$(vPathQVD)EXT_ContaMedicaItem.qvd] (qvd);
+DROP TABLE ContaMedicaItem;
+
+///$tab Reembolso e Mensalidade
+Reembolso:
+SQL SELECT NR_REEMBOLSO, CD_BENEFICIARIO, CD_PROCEDIMENTO, DT_SOLICITACAO,
+           VL_SOLICITADO, VL_REEMBOLSADO, IE_STATUS
+FROM ERP.TB_REEMBOLSO
+WHERE DT_SOLICITACAO >= TO_DATE('$(vDataCorte)', 'DD/MM/YYYY');
+STORE Reembolso INTO [$(vPathQVD)EXT_Reembolso.qvd] (qvd);
+DROP TABLE Reembolso;
+
+Mensalidade:
+SQL SELECT CD_BENEFICIARIO, CD_CONTRATO, DT_COMPETENCIA, VL_MENSALIDADE
+FROM ERP.TB_MENSALIDADE
+WHERE DT_COMPETENCIA >= TO_DATE('$(vDataCorte)', 'DD/MM/YYYY');
+STORE Mensalidade INTO [$(vPathQVD)EXT_Mensalidade.qvd] (qvd);
+DROP TABLE Mensalidade;

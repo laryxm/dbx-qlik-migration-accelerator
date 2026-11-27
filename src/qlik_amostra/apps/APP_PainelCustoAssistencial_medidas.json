@@ -1,0 +1,23 @@
+{
+  "app": "APP_PainelCustoAssistencial",
+  "origem": "Engine API GetAllInfos + GetMeasure (export simulado)",
+  "medidas_mestras": [
+    {"qId": "m01", "title": "Custo Assistencial", "expression": "Sum(VL_LIBERADO)", "description": "Valor liberado de contas médicas e reembolsos"},
+    {"qId": "m02", "title": "Valor Apresentado", "expression": "Sum(VL_APRESENTADO)", "description": "Valor cobrado pela rede antes da auditoria"},
+    {"qId": "m03", "title": "Glosa %", "expression": "Sum(VL_GLOSA) / Sum(VL_APRESENTADO)", "description": "Percentual glosado sobre o apresentado"},
+    {"qId": "m04", "title": "Custo Internações", "expression": "Sum({<[Tipo Guia]={'Internação'}>} VL_LIBERADO)", "description": "Custo de guias de internação"},
+    {"qId": "m05", "title": "Beneficiários Atendidos", "expression": "Count(DISTINCT CD_BENEFICIARIO)", "description": "Beneficiários com ao menos um atendimento"},
+    {"qId": "m06", "title": "Custo per Capita Atendido", "expression": "Sum(VL_LIBERADO) / Count(DISTINCT CD_BENEFICIARIO)", "description": "Custo médio por beneficiário atendido"},
+    {"qId": "m07", "title": "Custo Rede Cooperada", "expression": "Sum({<FL_COOPERADO={1}>} VL_LIBERADO)", "description": "Custo com prestadores cooperados"},
+    {"qId": "m08", "title": "Custo Ano Atual", "expression": "Sum({<[Competência]={\">=$(=YearStart(Max([Competência])))\"}>} VL_LIBERADO)", "description": "Custo acumulado no ano da última competência"},
+    {"qId": "m09", "title": "Sinistralidade", "expression": "Sum(VL_CUSTO) / Sum(VL_RECEITA)", "description": "Custo sobre receita de mensalidades (tabela FatoSinistralidade)"},
+    {"qId": "m10", "title": "Receita Mensalidades", "expression": "Sum(VL_RECEITA)", "description": "Receita de mensalidades (tabela FatoSinistralidade)"}
+  ],
+  "variaveis": [
+    {"name": "vAnoInicio", "definition": "2025"}
+  ],
+  "hypercubes_exportados": [
+    {"arquivo": "hypercube_custo_competencia_guia.csv", "dimensoes": ["Competência", "Tipo Guia"], "medidas": ["Custo Assistencial", "Valor Apresentado", "Glosa %", "Beneficiários Atendidos"]},
+    {"arquivo": "hypercube_sinistralidade_competencia.csv", "dimensoes": ["Competência"], "medidas": ["Sinistralidade", "Receita Mensalidades"]}
+  ]
+}
