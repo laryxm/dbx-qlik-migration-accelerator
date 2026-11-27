@@ -1,87 +1,73 @@
 # dbx-qlik-migration-accelerator
 
-**Acelerador de migração Qlik para Databricks.** Leva os scripts, QVDs e apps do Qlik para o Lakehouse com conversão assistida por IA, revisão humana onde ela importa e prova de que os números batem. Tudo conduzido por um app no Databricks Apps, pensado para quem está começando no Databricks.
+Acelerador para migrar ambientes Qlik para o Databricks. Ele lê os scripts, QVDs e apps do Qlik, gera o código Databricks com IA, pede a sua aprovação quando a IA não tem certeza e compara os números com o Qlik antes de liberar cada tabela. Tudo é feito por um app no Databricks Apps.
 
 ![Como o acelerador funciona](docs/diagrama.svg)
-
----
 
 ## Sumário
 
 1. [O que ele faz](#1-o-que-ele-faz)
-2. [Antes de instalar](#2-antes-de-instalar)
-3. [Instalar](#3-instalar) (três caminhos: pelo workspace, guiada ou manual)
-4. [Primeiro uso: a demonstração em 5 minutos](#4-primeiro-uso-a-demonstração-em-5-minutos)
-5. [Migrar o seu ambiente Qlik](#5-migrar-o-seu-ambiente-qlik)
-6. [Onde ficam os dados](#6-onde-ficam-os-dados)
-7. [Segurança, privacidade e governança](#7-segurança-privacidade-e-governança)
-8. [Configuração](#8-configuração)
-9. [Problemas comuns](#9-problemas-comuns)
-10. [Limitações conhecidas](#10-limitações-conhecidas)
-11. [Desinstalar](#11-desinstalar)
-12. [Estrutura do repositório](#12-estrutura-do-repositório)
-
----
+2. [Requisitos](#2-requisitos)
+3. [Instalar](#3-instalar)
+4. [Migrar o seu ambiente Qlik](#4-migrar-o-seu-ambiente-qlik)
+5. [Onde ficam os dados](#5-onde-ficam-os-dados)
+6. [Segurança e governança](#6-segurança-e-governança)
+7. [Configuração](#7-configuração)
+8. [Problemas comuns](#8-problemas-comuns)
+9. [Limitações conhecidas](#9-limitações-conhecidas)
+10. [Desinstalar](#10-desinstalar)
+11. [Estrutura do repositório](#11-estrutura-do-repositório)
 
 ## 1. O que ele faz
 
-No Qlik, ingestão, transformação, modelo e regra de negócio costumam viver dentro do mesmo script. O acelerador separa cada responsabilidade no lugar certo do Lakehouse e mostra, passo a passo, o que está acontecendo.
+São 8 passos, executados por um job serverless e acompanhados pelo app:
 
-| Passo | O que faz | Você recebe |
-|---|---|---|
-| **1 · Preparar** | Cria schemas, volume, tabelas de controle e dá as permissões ao app | Ambiente pronto |
-| **2 · Simular Qlik** | Só na demonstração: gera um ERP e QVDs fictícios | Dados para testar sem nada do cliente |
-| **3 · Triagem** | Lê o inventário de QVDs e decide o que migrar, eleger, revisar, arquivar ou descartar | O escopo real da migração (normalmente bem menor que o total de QVDs) |
-| **4 · Linhagem** | Lê scripts e cabeçalhos de QVD e rastreia cada medida do app até a coluna de origem | Grafo, complexidade e o conjunto mínimo de fontes |
-| **5 · Conversão com IA** | Gera SQL nativo Databricks, valida em sandbox e dá uma **nota de confiança** de 0 a 100 | Código pronto; o que ficar abaixo de 85 vai para a sua revisão |
-| **6 · Publicar** | Monta o pipeline só com o que foi aprovado e gera um bundle para dev, hml e prd | Pipeline no workspace e um pacote versionável |
-| **7 · Métricas e segurança** | Medidas mestras viram **metric views**; Section Access vira **row filter** | Métricas governadas para AI/BI, Genie e Power BI |
-| **8 · Paridade** | Compara com o Qlik em 4 níveis: contagem, somas, linha a linha e métricas do app | A prova de que os números batem |
+| Passo | O que faz |
+|---|---|
+| 1 · Preparar | Cria schemas, volume e tabelas de controle, e dá ao app as permissões que ele precisa |
+| 2 · Simular Qlik | Só no modo demonstração: gera um ERP e QVDs fictícios |
+| 3 · Triagem | Lê o inventário de QVDs e separa o que migrar, revisar, arquivar ou descartar |
+| 4 · Linhagem | Rastreia cada medida dos apps até a coluna de origem e define o escopo mínimo |
+| 5 · Conversão com IA | Gera SQL Databricks, valida em sandbox e dá uma nota de 0 a 100. Abaixo de 85, você revisa |
+| 6 · Publicar | Cria o pipeline com o que foi aprovado e um bundle para dev, hml e prd |
+| 7 · Métricas e segurança | Medidas mestras viram metric views; Section Access vira row filter |
+| 8 · Paridade | Compara com o Qlik: contagem, somas, linha a linha e métricas dos apps |
 
-**Princípios**
+A IA recebe só scripts e nomes de tabelas e colunas, nunca dados. Nada é publicado sem passar por validação, e todo código rejeitado volta para a IA com a sua orientação.
 
-- **A IA só vê metadados.** O modelo recebe scripts, nomes de tabelas e colunas. Nenhuma linha de dado de negócio.
-- **Nada publica sem validar.** Lint anti-viés, compilação em sandbox, contrato de colunas e contagem contra o QVD.
-- **Você decide onde a IA não teve certeza.** Aprovar libera; rejeitar exige uma orientação, que volta para a IA na próxima conversão.
-- **Paridade é entregável.** Cada objeto é comparado com o Qlik antes de o QVD ser desligado.
+<table>
+<tr>
+<td><img src="docs/img/entrada-de-dados.png" alt="Entrada de dados"><br><sub>Entrada de dados: modo, origens e pasta dos arquivos</sub></td>
+<td><img src="docs/img/revisao.png" alt="Revisão do código gerado"><br><sub>Revisão: script Qlik e SQL gerado lado a lado</sub></td>
+</tr>
+<tr>
+<td><img src="docs/img/mapa-dos-dados.png" alt="Mapa dos dados"><br><sub>Mapa dos dados: cada camada com link para o catálogo</sub></td>
+<td><img src="docs/img/paridade.png" alt="Paridade"><br><sub>Paridade: os números batem com o Qlik?</sub></td>
+</tr>
+</table>
 
----
+## 2. Requisitos
 
-## 2. Antes de instalar
-
-Confira com o administrador do workspace:
-
-| Item | Por quê | Onde ver |
-|---|---|---|
-| Workspace com **Unity Catalog** | Tudo é criado em um catálogo | Catalog |
-| **CREATE SCHEMA** em um catálogo | O acelerador cria `<prefixo>_ctrl`, `_bronze`, `_silver`, `_gold`, `_sandbox` | Catalog → catálogo → Permissions |
-| Permissão para conceder privilégios nesse catálogo (dono ou MANAGE) | O passo 1 dá ao app só o acesso que ele precisa. Sem isso, o passo mostra os comandos para o dono rodar | Catalog → catálogo → Permissions |
-| **Databricks Apps** habilitado | É a interface do acelerador | Menu lateral → Compute → Apps |
-| **Compute serverless** para jobs e notebooks | O fluxo roda em serverless | Settings → Compute |
-| Um **SQL warehouse** | O app lê as tabelas por ele (2X-Small basta) | SQL Warehouses |
-| Um **endpoint de foundation model** de chat | Usado na conversão com IA (ex.: `databricks-claude-sonnet-5-5`) | Serving |
-| Acesso à internet a partir do serverless (PyPI) | Os passos 2 e 8 instalam a biblioteca `pyqvd` | – |
-
----
+- Um workspace Databricks com Unity Catalog, Databricks Apps e compute serverless habilitados.
+- Um catálogo onde você possa criar schemas. Se você não for o dono do catálogo, o passo 1 mostra os comandos de permissão para o dono rodar.
+- Um SQL warehouse (o menor tamanho basta).
+- Um endpoint de modelo de IA em Serving, por exemplo `databricks-claude-sonnet-5-5`.
+- Acesso ao PyPI a partir do serverless: os passos 2 e 8 instalam a biblioteca `pyqvd`.
 
 ## 3. Instalar
 
-Escolha **um** dos três caminhos. Os três instalam a mesma coisa: o app `qlik-acelerador` e o job `qlik-acelerador-fluxo` (o nome do job segue o nome do app, então dá para ter mais de uma instalação no mesmo workspace, cada uma com seu catálogo ou prefixo).
+Há três formas de instalar. Todas criam o app `qlik-acelerador` e o job `qlik-acelerador-fluxo`. O nome do job acompanha o nome do app, então dá para ter mais de uma instalação no mesmo workspace.
 
-### Caminho A · Pelo workspace, sem linha de comando (recomendado para quem está começando)
+### Caminho A · Pelo workspace
 
-1. No Databricks, vá em **Workspace → Create → Git folder** e cole a URL deste repositório.
-2. Dentro da pasta criada, abra o notebook **`instalar/Instalar_pelo_workspace`**.
-3. Conecte em **Serverless** e clique em **Run all** uma vez. No topo da página aparecem cinco campos:
-   - **Catálogo**: onde o acelerador vai criar os schemas.
-   - **SQL warehouse** e **Modelo de IA**: escolha nas listas.
-   - **Prefixo** e **nome do app**: já vêm preenchidos.
-4. Preencha o catálogo e clique em **Run all** de novo. Leva de 5 a 10 minutos.
-5. No fim, aparece o link **Abrir o acelerador**.
+1. Em **Workspace → Create → Git folder**, cole a URL deste repositório.
+2. Abra o notebook `instalar/Instalar_pelo_workspace`, conecte em Serverless e clique em **Run all**.
+3. Preencha o catálogo no topo da página. O warehouse e o modelo aparecem em listas para escolher.
+4. Clique em **Run all** de novo. Em 5 a 10 minutos aparece o link do app.
 
-### Caminho B · Instalação guiada pelo terminal
+### Caminho B · Pelo terminal, com instalação guiada
 
-Requer a [Databricks CLI](https://docs.databricks.com/dev-tools/cli/install.html) e `python3`.
+Precisa da [Databricks CLI](https://docs.databricks.com/dev-tools/cli/install.html) e de `python3`.
 
 ```bash
 git clone https://github.com/laryxm/dbx-qlik-migration-accelerator.git
@@ -89,177 +75,123 @@ cd dbx-qlik-migration-accelerator
 ./instalar/instalar.sh
 ```
 
-O script confere o login, **lista os catálogos, os warehouses e os modelos disponíveis** para você escolher, instala, publica o app, prepara o ambiente e mostra o link.
+O script mostra os catálogos, warehouses e modelos disponíveis, instala tudo e devolve o link do app.
 
-### Caminho C · Manual, com Databricks Asset Bundles
+### Caminho C · Com Databricks Asset Bundles
 
 ```bash
-databricks auth login --host https://<seu-workspace> --profile meu-workspace
-
-databricks bundle deploy -p meu-workspace \
-  --var="catalogo=<catalogo>" \
-  --var="warehouse_id=<id-do-warehouse>"
-
-databricks bundle run acelerador -p meu-workspace \
-  --var="catalogo=<catalogo>" --var="warehouse_id=<id-do-warehouse>"
-
-databricks bundle run acelerador_fluxo --only 01_preparar_ambiente -p meu-workspace \
-  --var="catalogo=<catalogo>" --var="warehouse_id=<id-do-warehouse>"
+databricks bundle deploy -p <perfil> --var="catalogo=<catalogo>" --var="warehouse_id=<id>"
+databricks bundle run acelerador -p <perfil> --var="catalogo=<catalogo>" --var="warehouse_id=<id>"
+databricks bundle run acelerador_fluxo --only 01_preparar_ambiente -p <perfil> --var="catalogo=<catalogo>" --var="warehouse_id=<id>"
 ```
 
-Variáveis opcionais: `prefixo_schema` (padrão `qlik_acel`), `modelo` (padrão `databricks-claude-sonnet-5-5`) e `app_nome` (padrão `qlik-acelerador`). O link do app aparece no fim do segundo comando e em **Compute → Apps**.
+Variáveis opcionais: `prefixo_schema` (padrão `qlik_acel`), `modelo` (padrão `databricks-claude-sonnet-5-5`) e `app_nome` (padrão `qlik-acelerador`).
 
-> **O que é instalado:** um job serverless com 8 tarefas e um app com três recursos (o SQL warehouse, o job e o endpoint do modelo). Nada é criado fora do catálogo que você escolheu.
+Depois de instalar, abra o app e comece pela aba **Como usar**. Para conhecer o fluxo sem dados do cliente, use o modo **Demonstração** e execute todos os passos. A demonstração usa uma empresa fictícia e leva cerca de 12 minutos.
 
----
+## 4. Migrar o seu ambiente Qlik
 
-## 4. Primeiro uso: a demonstração em 5 minutos
+### O que exportar do Qlik
 
-O modo **Demonstração** usa uma empresa fictícia (Cooperativa de Saúde Vale do Ipê) e dados sintéticos. Serve para conhecer o fluxo antes de usar qualquer dado real.
+Não é preciso exportar todos os QVDs:
 
-1. Abra o app e leia a aba **Como usar**.
-2. Em **Pré-requisitos**, confira se está tudo verde.
-3. Em **Executar**, deixe todos os passos marcados e clique em **Executar selecionados**. O progresso aparece na tela e no topo de todas as abas. São cerca de 12 minutos.
-4. Navegue pelas abas na ordem: **Triagem**, **Linhagem**, **Revisar conversão** (aprove os objetos que pedem revisão), depois **Executar → Só 05 a 08**.
-5. Veja o resultado em **Publicar**, **Paridade** e **Mapa dos dados** (onde está cada camada, com links para o Catalog Explorer).
+| Arquivo | De quais | Para quê |
+|---|---|---|
+| `inventario*.csv` (colunas `nome, espaco, linhas, tamanho_bytes, atualizado_em`) | todos os QVDs, só a lista | triagem |
+| `NomeDoApp.qvs` | os scripts da onda | linhagem e conversão |
+| `*.qvd`, só o cabeçalho | os QVDs que esses scripts gravam e leem | colunas, contagem e linhagem |
+| `*.qvd` completo | só os QVDs que os apps da onda leem | paridade linha a linha |
+| `NomeDoApp_medidas.json` | os apps da onda | metric views e paridade das métricas |
+| `hypercube*.csv` (separador `;`, decimal `,`) | uma tabela por visão importante do app | paridade das métricas |
 
----
+Os QVDs de extração não precisam vir completos, porque os dados de origem chegam pelo Lakeflow Connect, direto do banco. O formato do arquivo de medidas está em `src/qlik_amostra/apps/`.
 
-## 5. Migrar o seu ambiente Qlik
-
-### 5.1 O que exportar do Qlik
-
-Não é preciso exportar todos os QVDs. Cada arquivo tem um papel:
-
-| Entrada | Arquivo | De quais | Para quê |
-|---|---|---|---|
-| **Inventário** | `inventario*.csv` com `nome, espaco, linhas, tamanho_bytes, atualizado_em` | **Todos** os QVDs (só metadados) | Triagem do ambiente inteiro |
-| **Load scripts** | `NomeDoApp.qvs` (um por app ou QVW) | Os scripts da onda | Linhagem e conversão |
-| **Cabeçalhos de QVD** | `*.qvd` (basta o cabeçalho XML) | Os QVDs que os scripts da onda gravam e leem | Colunas, contagem e linhagem |
-| **QVDs completos** | `*.qvd` | Só os que os apps da onda leem (modelo) | Paridade linha a linha |
-| **Medidas dos apps** | `NomeDoApp_medidas.json` | Os apps da onda | Metric views e paridade de métricas |
-| **Tabelas exportadas** | `hypercube*.csv` (separador `;`, decimal `,`) | Uma por visão importante do app | Paridade de métricas (N4) |
-
-Os QVDs de extração (o "bronze" do Qlik) não precisam vir completos: o dado de origem chega ao Lakehouse pelo **Lakeflow Connect**, direto do banco. Formato do arquivo de medidas: veja `src/qlik_amostra/apps/APP_PainelCustoAssistencial_medidas.json`.
-
-### 5.2 Configurar no app
+### O que configurar no app
 
 Na aba **1 · Entrada de dados**:
 
-1. **Modo:** *Ambiente do cliente*.
-2. **Tabelas de origem:** se já estão no Lakehouse, informe o `catálogo.schema` onde o Lakeflow Connect grava. Se ainda não foram ingeridas, o acelerador entrega a triagem, a linhagem e a especificação de ingestão de cada tabela.
-3. **Pasta de entrada:** use o padrão e envie os arquivos pelo próprio app (arraste um .zip), ou indique um volume do Unity Catalog onde o time já copiou os arquivos.
-4. **Onda:** o lote que está sendo migrado agora, normalmente um app ou um domínio (ex.: `onda_1_custo_assistencial`). Vai como tag em tudo, para acompanhar andamento e custo por lote.
+1. **Modo:** escolha Ambiente do cliente.
+2. **Tabelas de origem:** informe o `catálogo.schema` onde o Lakeflow Connect grava os dados. Se ainda não houver ingestão, o acelerador entrega a triagem, a linhagem e a especificação de ingestão de cada tabela.
+3. **Pasta de entrada:** envie os arquivos pelo app (um .zip resolve) ou informe o volume onde eles já estão.
+4. **Onda:** dê um nome ao lote que está sendo migrado agora, como `onda_1_custo_assistencial`. Esse nome vira tag em tudo o que for criado.
 
-Depois, siga as abas na ordem numerada. Cada aba explica o conceito para quem vem do Qlik.
+Depois, siga as abas na ordem numerada.
 
-> **Data de corte:** para a paridade ser justa, a recarga do Qlik e a ingestão das origens precisam olhar para o mesmo momento (por exemplo, os dois em D-1), ou compare só períodos fechados.
+Para a paridade ser justa, a recarga do Qlik e a ingestão das origens precisam ter a mesma data de corte. Outra opção é comparar só períodos fechados.
 
----
+## 5. Onde ficam os dados
 
-## 6. Onde ficam os dados
+A aba **Mapa dos dados** mostra cada camada com link para o Catalog Explorer. Com o prefixo padrão:
 
-A aba **Mapa dos dados** mostra isso com links. Resumo, com o prefixo padrão `qlik_acel`:
-
-| Camada | Onde | No Qlik equivale a |
+| Camada | Onde fica | No Qlik |
 |---|---|---|
-| Entrada (arquivos) | Volume `/Volumes/<catalogo>/qlik_acel_ctrl/arquivos`, ou o volume que você indicar | arquivos .qvs, .qvd e exports |
-| Bronze | `<catalogo>.qlik_acel_bronze`, ou o schema do Lakeflow Connect | o SQL SELECT dos scripts de extração |
+| Entrada | volume `/Volumes/<catalogo>/qlik_acel_ctrl/arquivos`, ou o volume que você informar | arquivos .qvs, .qvd e exports |
+| Bronze | `<catalogo>.qlik_acel_bronze`, ou o schema do Lakeflow Connect | SQL SELECT dos scripts de extração |
 | Silver | `<catalogo>.qlik_acel_silver` | QVDs de transformação e MAPPING LOAD |
 | Gold | `<catalogo>.qlik_acel_gold` | QVDs Fato* e Dim* |
-| Metric views | `<catalogo>.qlik_acel_gold` (`mv_*`) | medidas mestras e Set Analysis |
-| Controle | `<catalogo>.qlik_acel_ctrl` | o que o acelerador descobre e decide (inventário, linhagem, conversão, paridade, auditoria) |
-| Sandbox | `<catalogo>.qlik_acel_sandbox` | views temporárias de teste do código gerado |
+| Metric views | `<catalogo>.qlik_acel_gold` (`mv_*`) | medidas mestras |
+| Controle | `<catalogo>.qlik_acel_ctrl` | inventário, linhagem, conversão, paridade e auditoria |
+| Sandbox | `<catalogo>.qlik_acel_sandbox` | testes do código gerado |
 
----
+## 6. Segurança e governança
 
-## 7. Segurança, privacidade e governança
+- O repositório não guarda nenhuma credencial. O app usa o service principal que o Databricks Apps cria para ele, e a instalação usa o seu login.
+- O passo 1 concede ao app só o necessário:
+  - `USE CATALOG` no catálogo;
+  - leitura e escrita no schema de controle e no volume;
+  - leitura em bronze, silver, gold e sandbox.
+- A IA roda no Model Serving do próprio workspace e recebe apenas metadados.
+- Todas as ações ficam registradas no schema de controle:
+  - `evento`: o que aconteceu, quando e por quem;
+  - `unidade_status`: o estado de cada tabela, objeto e medida;
+  - `aprovacao`: quem aprovou o quê;
+  - `conv_auditoria_llm`: cada chamada à IA, com os tokens.
 
-- **Nenhuma credencial neste repositório.** O app autentica com o próprio service principal, criado pelo Databricks Apps. A instalação usa o seu login da CLI ou do workspace, que nunca é gravado em arquivo.
-- **Permissões mínimas para o app.** O passo 1 concede ao service principal do app: `USE CATALOG` no catálogo; `USE SCHEMA`, `SELECT` e `MODIFY` no schema de controle; `READ VOLUME` e `WRITE VOLUME` no volume de arquivos; `USE SCHEMA` e `SELECT` em silver, gold, bronze e sandbox.
-- **A IA só recebe metadados.** Scripts, nomes de tabelas, colunas e tipos. Nenhuma linha de dado vai para o modelo, que roda dentro do Databricks (Model Serving).
-- **Tudo auditável.** As tabelas `evento` (linha do tempo com usuário), `unidade_status` (estado de cada tabela, objeto e medida), `aprovacao` (quem aprovou o quê, com o hash do SQL) e `conv_auditoria_llm` (cada chamada ao modelo, com tokens) ficam no schema de controle. As chamadas ao modelo também geram traces no MLflow.
-- **Custo por onda.** Tudo o que o acelerador cria leva as tags `onda` e `gerado_por`, consultáveis em `system.billing.usage`.
-- **Section Access vira regra do Unity Catalog.** A regra passa a valer em dashboard, Genie, notebook, Power BI e API.
+  As chamadas à IA também ficam no MLflow.
+- Tudo o que o acelerador cria recebe as tags `onda` e `gerado_por`. Assim dá para ver o custo por onda em `system.billing.usage`.
 
----
+## 7. Configuração
 
-## 8. Configuração
+Os padrões ficam em `src/config/acelerador.yml`, com um comentário em cada linha. As mudanças feitas no app, em **Entrada de dados** e **Ajustes avançados**, valem a partir da próxima execução. Catálogo, prefixo, onda, modo e modelo também podem ser passados como parâmetros do job.
 
-Quase nada precisa ser mudado. A ordem de precedência é:
+## 8. Problemas comuns
 
-1. `src/config/acelerador.yml`: padrões do pacote, comentados linha a linha.
-2. O que você salva no app (**Entrada de dados** e **Ajustes avançados**), gravado em `config/acelerador.json` no volume.
-3. Parâmetros do job: `catalogo`, `prefixo_schema`, `onda`, `modo` e `modelo`.
+| Sintoma | O que fazer |
+|---|---|
+| Item vermelho em Pré-requisitos | A tela mostra o comando ou a ação para resolver |
+| O passo 1 não conseguiu dar as permissões | Peça ao dono do catálogo para rodar os `GRANT` listados na saída do job |
+| O passo 5 falha com 403 ou "endpoint not found" | Use outro modelo, em Ajustes avançados → IA ou na variável `modelo` |
+| Os passos 2 ou 8 falham no `pip install` | Libere o PyPI no serverless ou configure um repositório interno |
+| O app mostra a versão antiga | Recarregue a página com Cmd+Shift+R (no Windows, Ctrl+F5) |
 
-Em **Ajustes avançados** ficam, já preenchidos: os limites da triagem (dias para ativo, recente e parado; espaços descartados), a nota mínima para aprovação automática, as tolerâncias da paridade, as regras de segurança e os catálogos de dev, hml e prd do bundle gerado.
+## 9. Limitações conhecidas
 
----
+- Com só o cabeçalho do QVD, os passos 4 e 5 funcionam, mas o passo 8 ainda precisa do QVD completo.
+- O acelerador processa todos os scripts da pasta de entrada. Para migrar por ondas, envie os scripts de uma onda por vez ou use uma pasta para cada onda.
+- Ainda não existe um kit que exporte os arquivos direto do Qlik.
+- Expressões que dependem da seleção do usuário no Qlik são convertidas com ressalva e marcadas para revisão.
 
-## 9. Problemas comuns
-
-| Sintoma | Causa provável | O que fazer |
-|---|---|---|
-| Um item vermelho em **Pré-requisitos** | Falta permissão ou recurso | A própria tela mostra o comando ou a ação |
-| O passo 1 avisa que não conseguiu conceder permissões | Quem rodou não é dono do catálogo | Peça ao dono para rodar os comandos `GRANT` listados na saída do job |
-| O passo 5 falha com 403 ou "endpoint not found" | O modelo não existe no workspace ou está desabilitado | Reinstale com outro `modelo` ou troque em **Ajustes avançados → IA** |
-| Os passos 2 ou 8 falham no `pip install` | O serverless não tem acesso ao PyPI | Libere o PyPI ou use um repositório interno de pacotes |
-| O app abre a versão antiga depois de reinstalar | Cache do navegador | Recarregue com Cmd+Shift+R (ou Ctrl+F5) uma vez |
-| Uma tela mostra "Nada por aqui ainda" | O passo correspondente ainda não rodou | Vá em **Executar** |
-
----
-
-## 10. Limitações conhecidas
-
-- **Paridade só com o cabeçalho do QVD:** os passos 4 e 5 aceitam arquivos `.qvd` que contêm só o cabeçalho, mas o passo 8 ainda precisa do QVD completo dos objetos que compara.
-- **Escopo da onda:** o acelerador processa todos os scripts da pasta de entrada. Para migrar por lotes, envie os scripts de uma onda por vez, ou use uma pasta por onda.
-- **Exportação do lado do Qlik:** ainda não há um kit automático. Os arquivos são exportados manualmente ou com `qlik-cli`.
-- **Conversão sequencial:** os scripts são convertidos um por vez, em ordem de dependência.
-- Expressões de Set Analysis que dependem da seleção do usuário são convertidas **com ressalva** e marcadas para revisão.
-
----
-
-## 11. Desinstalar
+## 10. Desinstalar
 
 ```bash
-databricks bundle destroy -p meu-workspace --var="catalogo=<catalogo>" --var="warehouse_id=<id>"
+databricks bundle destroy -p <perfil> --var="catalogo=<catalogo>" --var="warehouse_id=<id>"
 ```
 
-Os schemas e os dados não são apagados automaticamente. Para remover também os dados:
+Esse comando não apaga os schemas. Para remover os dados, rode `DROP SCHEMA <catalogo>.qlik_acel_<camada> CASCADE` para cada uma das camadas: `ctrl`, `bronze`, `silver`, `gold` e `sandbox`.
 
-```sql
-DROP SCHEMA <catalogo>.qlik_acel_ctrl CASCADE;
-DROP SCHEMA <catalogo>.qlik_acel_bronze CASCADE;
-DROP SCHEMA <catalogo>.qlik_acel_silver CASCADE;
-DROP SCHEMA <catalogo>.qlik_acel_gold CASCADE;
-DROP SCHEMA <catalogo>.qlik_acel_sandbox CASCADE;
-```
+Se você instalou pelo Caminho A, apague manualmente o app, o job `<app>-fluxo` e o pipeline cujo nome termina em `_demo`.
 
-Se instalou pelo Caminho A, apague o job `<app>-fluxo` em **Jobs & Pipelines**, o app em **Compute → Apps** e o pipeline gerado, cujo nome termina em `_demo`.
-
----
-
-## 12. Estrutura do repositório
+## 11. Estrutura do repositório
 
 ```
-databricks.yml                 bundle: variáveis da instalação
-resources/                     job (8 passos) e app
-src/
-  00_LEIA_ME.py                visão geral, para quem abre os notebooks
-  00_setup.py                  configuração central (lida por todos os passos)
-  01_ … 08_*.py                os 8 passos
-  acel_ctrl.py                 governança: eventos, estados, aprovações
-  qlik_parser.py               parser de load script e de cabeçalho QVD
-  qlik_conversor.py            prompt anti-viés, lint, nota de confiança
-  config/acelerador.yml        padrões comentados
-  qlik_amostra/                amostra fictícia usada no modo Demonstração
-app/                           o app (FastAPI + HTML, sem etapa de build)
-instalar/
-  instalar.sh                  instalação guiada pelo terminal
-  Instalar_pelo_workspace.py   instalação por notebook, sem linha de comando
-docs/diagrama.svg              o diagrama acima
+databricks.yml        bundle e variáveis da instalação
+resources/            definição do job e do app
+src/                  os 8 passos, a configuração e a amostra fictícia
+app/                  o app (FastAPI + HTML)
+instalar/             instalação guiada (instalar.sh) e por notebook
+docs/                 diagrama e imagens
 ```
 
----
+## Licença
 
-> Projeto independente da comunidade, sem suporte oficial da Databricks. Revise o código gerado e os resultados de paridade antes de usar em produção.
+[Apache 2.0](LICENSE). Este é um projeto independente, sem suporte oficial da Databricks. Revise o código gerado e os resultados da paridade antes de usar em produção.
