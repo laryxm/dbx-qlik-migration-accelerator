@@ -14,7 +14,7 @@
   <rect width="1400" height="720" fill="#FFFFFF"/>
 
   <!-- título -->
-  <text x="40" y="46" font-size="25" font-weight="700" fill="#1B3139">Acelerador de migração Qlik → Databricks</text>
+  <text x="40" y="46" font-size="25" font-weight="700" fill="#1B3139">Acelerador de migração Qlik para Databricks</text>
   <text x="40" y="72" font-size="14" fill="#5C7A85">Do QVD ao Lakehouse: a IA converte, você aprova, a paridade comprova. Tudo conduzido por um app.</text>
 
   <!-- ===================== coluna A: Qlik ===================== -->
@@ -100,7 +100,7 @@
     <text x="860" y="276">da métrica do app até</text><text x="860" y="291">a coluna de origem</text>
     <text x="860" y="396">SQL nativo + nota</text><text x="860" y="411">de confiança 0 a 100</text>
     <text x="694" y="396">pipeline + bundle</text><text x="694" y="411">dev · hml · prd</text>
-    <text x="528" y="396">metric views e Section</text><text x="528" y="411">Access → row filter</text>
+    <text x="528" y="396">metric views e Section</text><text x="528" y="411">Access como row filter</text>
     <text x="362" y="396">N1 a N4 contra os</text><text x="362" y="411">números do Qlik</text>
   </g>
   <!-- setas do fluxo em zigue-zague -->
@@ -110,8 +110,8 @@
     <path d="M848,384 H836"/><path d="M682,384 H670"/><path d="M516,384 H504"/>
   </g>
   <!-- revisão humana -->
-  <rect x="852" y="436" width="142" height="22" rx="11" fill="#FF3621"/>
-  <text x="923" y="451" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">nota &lt; 85 → você aprova</text>
+  <rect x="840" y="436" width="166" height="22" rx="11" fill="#FF3621"/>
+  <text x="923" y="451" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">nota abaixo de 85: você aprova</text>
 
   <!-- princípios -->
   <g filter="url(#sombra)">
@@ -135,7 +135,7 @@
 
   <!-- seta acelerador -> lakehouse -->
   <path d="M1020,320 H1056" stroke="#5C7A85" stroke-width="2" fill="none" marker-end="url(#seta)"/>
-  <text x="1038" y="309" font-size="10.5" fill="#5C7A85" text-anchor="middle">gera</text>
+  <text x="1032" y="338" font-size="10.5" fill="#5C7A85" text-anchor="middle">gera</text>
 
   <!-- ===================== coluna C: Lakehouse ===================== -->
   <rect x="1060" y="100" width="310" height="470" rx="14" fill="#F4FAFB" stroke="#CFE6EA"/>
@@ -175,7 +175,7 @@
   </g>
 
   <!-- banco -> bronze (Lakeflow Connect), passando por baixo -->
-  <path d="M250,505 H300 V590 H1040 V236 H1076" stroke="#FF3621" stroke-width="2" fill="none" marker-end="url(#seta-laranja)"/>
+  <path d="M250,505 H300 V590 H1048 V236 H1076" stroke="#FF3621" stroke-width="2" fill="none" marker-end="url(#seta-laranja)"/>
   <rect x="580" y="579" width="216" height="22" rx="11" fill="#FFFFFF" stroke="#FF3621"/>
   <text x="688" y="594" font-size="11" font-weight="700" fill="#FF3621" text-anchor="middle">Lakeflow Connect · D-1 ou CDC</text>
 
@@ -187,7 +187,7 @@
     <text x="284" y="676">● Estado de cada tabela e objeto</text>
     <text x="530" y="676">● Aprovações com autor</text>
     <text x="722" y="676">● Traces de IA e tokens (MLflow)</text>
-    <text x="970" y="676">● Tags por onda → custo</text>
-    <text x="1160" y="676">● Section Access → row filter</text>
+    <text x="970" y="676">● Custo por onda (tags)</text>
+    <text x="1160" y="676">● Section Access como row filter</text>
   </g>
 </svg>
